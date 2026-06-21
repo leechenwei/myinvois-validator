@@ -5,11 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MyInvois JSON Validator — Check Malaysia e-Invoice File Before Submit (Free)</title>
 <meta name="description" content="Free, private MyInvois e-Invoice JSON validator. Paste your Malaysia e-invoice JSON and instantly find the mandatory fields and format errors (RM vs MYR, TIN, dates) that the LHDN MyInvois portal rejects — checked entirely in your browser, nothing uploaded.">
-<link rel="canonical" href="https://example.com/">
+<link rel="canonical" href="https://myinvois-validator.vercel.app/">
 <meta property="og:title" content="MyInvois JSON Validator — Check your Malaysia e-Invoice before submitting">
 <meta property="og:description" content="Find the field that gets your MyInvois e-invoice rejected, before you submit. 100% in-browser, no upload.">
 <meta property="og:type" content="website">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✅</text></svg>">
+<meta property="og:url" content="https://myinvois-validator.vercel.app/">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#1d4ed8">
 <style>
   :root { --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#f8fafc;
           --err:#dc2626; --errbg:#fef2f2; --warn:#b45309; --warnbg:#fffbeb; --ok:#16a34a; --okbg:#f0fdf4;
@@ -51,6 +53,10 @@
 </head>
 <body>
 <main>
+  <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem">
+    <img src="favicon.svg" width="30" height="30" alt="" style="border-radius:7px">
+    <span style="font-weight:800;letter-spacing:-.01em;color:var(--brand)">MyInvois Validator</span>
+  </div>
   <h1>MyInvois JSON Validator</h1>
   <p class="lede">Paste your Malaysia e-Invoice JSON below to find the mandatory fields and format errors
     that get rejected by the <strong>MyInvois</strong> portal — <strong>before</strong> you submit.

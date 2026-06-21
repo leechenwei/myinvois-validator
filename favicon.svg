@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="MyInvois Validator">
+  <rect width="64" height="64" rx="14" fill="#1d4ed8"/>
+  <!-- document -->
+  <rect x="18" y="13" width="24" height="32" rx="3" fill="#ffffff" opacity="0.95"/>
+  <rect x="23" y="20" width="14" height="2.6" rx="1.3" fill="#1d4ed8" opacity="0.45"/>
+  <rect x="23" y="26" width="14" height="2.6" rx="1.3" fill="#1d4ed8" opacity="0.45"/>
+  <rect x="23" y="32" width="9" height="2.6" rx="1.3" fill="#1d4ed8" opacity="0.45"/>
+  <!-- check badge -->
+  <circle cx="43" cy="44" r="13" fill="#16a34a" stroke="#1d4ed8" stroke-width="3"/>
+  <path d="M37 44 l4.5 4.5 l8 -9" fill="none" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
