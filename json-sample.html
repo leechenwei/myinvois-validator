@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MyInvois JSON Sample & Format (UBL v1.1): Copy-Paste e-Invoice Template</title>
+<meta name="description" content="A correct, copy-paste MyInvois (LHDN Malaysia) e-invoice JSON sample in UBL 2.1 v1.1 format — with the underscore-key gotcha explained and every mandatory field. Validate your own file free, in your browser.">
+<link rel="canonical" href="https://myinvois-validator.vercel.app/json-sample.html">
+<meta name="theme-color" content="#1d4ed8">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <div class="brand"><img src="favicon.svg" width="26" height="26" alt=""><span>MyInvois Validator</span></div>
+  <nav class="crumbs"><a href="/">← Validator tool</a> · <a href="error-codes.html">Common errors &amp; fixes</a></nav>
+
+  <h1>MyInvois JSON sample &amp; format (UBL 2.1, v1.1)</h1>
+  <p class="lede">A clean, correct Malaysia e-invoice JSON you can copy, paste, and adapt — plus the one formatting quirk that trips everyone up. When you're done, <a href="/">validate your version</a> in your browser (nothing uploaded).</p>
+
+  <h2>The #1 gotcha: every value is wrapped</h2>
+  <p>MyInvois JSON follows the UBL 2.1 structure. Unlike normal JSON, <strong>every field value is an array of objects, and the value lives under a <code>"_"</code> key</strong>. Attributes (like <code>currencyID</code> or <code>schemeID</code>) sit alongside the <code>"_"</code>.</p>
+  <div class="card">
+    <p class="bad">✗ Normal JSON (rejected)</p><pre><code>"ID": "INV-001",
+"DocumentCurrencyCode": "MYR"</code></pre>
+    <p class="good">✓ MyInvois UBL JSON</p><pre><code>"ID": [{ "_": "INV-001" }],
+"DocumentCurrencyCode": [{ "_": "MYR" }]</code></pre>
+  </div>
+  <p>The document is also wrapped in three namespace keys (<code>_D</code>, <code>_A</code>, <code>_B</code>) and an <code>Invoice</code> array.</p>
+
+  <h2>Complete minimal sample (Invoice v1.1)</h2>
+  <p>This validates structurally against the v1.1 mandatory fields. Replace the values with your own (and add your digital signature in the signing step before submitting).</p>
+  <pre><code>{
+  "_D": "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",
+  "_A": "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
+  "_B": "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+  "Invoice": [{
+    "ID": [{ "_": "INV-2026-100" }],
+    "IssueDate": [{ "_": "2026-06-21" }],
+    "IssueTime": [{ "_": "09:15:00Z" }],
+    "InvoiceTypeCode": [{ "_": "01", "listVersionID": "1.1" }],
+    "DocumentCurrencyCode": [{ "_": "MYR" }],
+    "AccountingSupplierParty": [{ "Party": [{
+      "PartyLegalEntity": [{ "RegistrationName": [{ "_": "Contoh Teknologi Sdn Bhd" }] }],
+      "PartyIdentification": [
+        { "ID": [{ "_": "C1234567890123", "schemeID": "TIN" }] },
+        { "ID": [{ "_": "201901000005", "schemeID": "BRN" }] }
+      ],
+      "IndustryClassificationCode": [{ "_": "62010", "name": "Computer programming" }],
+      "PostalAddress": [{
+        "CityName": [{ "_": "Kuala Lumpur" }],
+        "Country": [{ "IdentificationCode": [{ "_": "MYS" }] }]
+      }]
+    }] }],
+    "AccountingCustomerParty": [{ "Party": [{
+      "PartyLegalEntity": [{ "RegistrationName": [{ "_": "Siti binti Rahman" }] }],
+      "PartyIdentification": [
+        { "ID": [{ "_": "IG123456789012", "schemeID": "TIN" }] },
+        { "ID": [{ "_": "910203045566", "schemeID": "NRIC" }] }
+      ],
+      "PostalAddress": [{
+        "CityName": [{ "_": "Shah Alam" }],
+        "Country": [{ "IdentificationCode": [{ "_": "MYS" }] }]
+      }]
+    }] }],
+    "InvoiceLine": [{
+      "Item": [{ "Description": [{ "_": "Web development services" }] }],
+      "LineExtensionAmount": [{ "_": 3000, "currencyID": "MYR" }]
+    }],
+    "TaxTotal": [{ "TaxAmount": [{ "_": 0, "currencyID": "MYR" }] }],
+    "LegalMonetaryTotal": [{
+      "TaxExclusiveAmount": [{ "_": 3000, "currencyID": "MYR" }],
+      "TaxInclusiveAmount": [{ "_": 3000, "currencyID": "MYR" }],
+      "PayableAmount": [{ "_": 3000, "currencyID": "MYR" }]
+    }]
+  }]
+}</code></pre>
+
+  <h2>Mandatory pieces to remember</h2>
+  <table>
+    <tr><th>Field</th><th>Rule</th></tr>
+    <tr><td>ID</td><td>Invoice number, ≤ 50 chars, unique per supplier</td></tr>
+    <tr><td>IssueDate / IssueTime</td><td><code>YYYY-MM-DD</code> / <code>HH:MM:SSZ</code> (UTC)</td></tr>
+    <tr><td>InvoiceTypeCode</td><td>e.g. <code>01</code>, with <code>listVersionID "1.1"</code></td></tr>
+    <tr><td>DocumentCurrencyCode</td><td>ISO 4217, e.g. <code>MYR</code> (never <code>RM</code>)</td></tr>
+    <tr><td>Supplier &amp; Buyer TIN</td><td>schemeID <code>TIN</code>; plus a registration ID (BRN / NRIC / PASSPORT)</td></tr>
+    <tr><td>Supplier MSIC</td><td>5-digit IndustryClassificationCode</td></tr>
+    <tr><td>InvoiceLine</td><td>Item description + LineExtensionAmount (currencyID = doc currency)</td></tr>
+    <tr><td>LegalMonetaryTotal</td><td>TaxExclusiveAmount, TaxInclusiveAmount, PayableAmount</td></tr>
+  </table>
+
+  <a class="cta" href="/">Paste your JSON into the validator →</a>
+
+  <div class="disclaimer">⚠️ Unofficial reference. Not affiliated with LHDN / IRBM / MyInvois. Structural sample only — it does not include a digital signature and does not replace the official MyInvois validation. Provided “as is”, no warranty.</div>
+
+  <footer>
+    Related: <a href="/">MyInvois JSON Validator</a> · <a href="error-codes.html">Why e-invoices get rejected</a><br>
+    Built against the public LHDN MyInvois SDK Invoice v1.1 specification. Names used descriptively; independent, not affiliated.
+  </footer>
+</main>
+</body>
+</html>

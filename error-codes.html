@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MyInvois e-Invoice Rejected? Common Errors & How to Fix Them (2026)</title>
+<meta name="description" content="Why your Malaysia MyInvois e-invoice was rejected — plain-English fixes for the most common LHDN errors: Invalid Structure, Buyer TIN is invalid, RM vs MYR currency, Classification code is required, DS302 duplicate, missing email/phone. With before/after JSON.">
+<link rel="canonical" href="https://myinvois-validator.vercel.app/error-codes.html">
+<meta name="theme-color" content="#1d4ed8">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <div class="brand"><img src="favicon.svg" width="26" height="26" alt=""><span>MyInvois Validator</span></div>
+  <nav class="crumbs"><a href="/">← Validator tool</a> · <a href="json-sample.html">JSON sample &amp; format</a></nav>
+
+  <h1>Why your MyInvois e-Invoice was rejected — and how to fix it</h1>
+  <p class="lede">The MyInvois (LHDN) system rejects an e-invoice rather than warn you, often with a terse code. Below are the most common reasons a Malaysian e-invoice JSON fails validation, in plain English, with the exact fix. Paste your file into the <a href="/">free validator</a> to find which one is yours — it runs in your browser, nothing is uploaded.</p>
+
+  <a class="cta" href="/">Check my e-invoice JSON →</a>
+
+  <h2>1. Invalid Structure — fields not wrapped correctly</h2>
+  <p>The #1 mistake when hand-building MyInvois JSON. UBL 2.1 requires <strong>every value to be wrapped in an array of objects with a <code>"_"</code> key</strong>. A bare value is rejected.</p>
+  <div class="card">
+    <p class="bad">✗ Wrong</p><pre><code>"ID": "INV-001"</code></pre>
+    <p class="good">✓ Correct</p><pre><code>"ID": [{ "_": "INV-001" }]</code></pre>
+  </div>
+
+  <h2>2. "ISO Currency Code ... not updated" — RM instead of MYR</h2>
+  <p>The currency must be the 3-letter ISO 4217 code <code>MYR</code>, not <code>RM</code>. Every monetary amount's <code>currencyID</code> attribute must match the document currency too.</p>
+  <div class="card">
+    <p class="bad">✗ <code>"DocumentCurrencyCode": [{ "_": "RM" }]</code></p>
+    <p class="good">✓ <code>"DocumentCurrencyCode": [{ "_": "MYR" }]</code></p>
+  </div>
+
+  <h2>3. Foreign currency without an exchange rate</h2>
+  <p>Since 1 September 2025, a non-MYR invoice <strong>must</strong> include the currency exchange rate to MYR, or it is rejected. For an MYR invoice the rate must be left blank or <code>0</code> (a random rate is also rejected). Add the <code>TaxExchangeRate</code> with <code>CalculationRate</code> for foreign-currency invoices.</p>
+
+  <h2>4. "Buyer TIN is invalid" / TIN is required</h2>
+  <p>Both supplier and buyer need a valid Tax Identification Number (TIN). Common causes: the TIN is missing, has the wrong length, or uses an outdated prefix. <strong>Don't guess the TIN</strong> — get the correct one from LHDN's official <em>Search TIN</em> function in the MyTax portal. For business-to-consumer consolidated invoices, the general-public buyer TIN is <code>EI00000000010</code>.</p>
+
+  <h2>5. "Classification code is required" / invalid</h2>
+  <p>Each invoice line needs a mandatory 3-digit classification code (<code>001</code>–<code>045</code>) describing the item/service. It is separate from the supplier's 5-digit MSIC code. Missing or out-of-range codes are rejected.</p>
+
+  <h2>6. Wrong date or time format</h2>
+  <p>Date must be <code>YYYY-MM-DD</code> and time must be <code>HH:MM:SSZ</code> in UTC (note the trailing <code>Z</code>). Local formats like <code>20/06/2026</code> are rejected.</p>
+
+  <h2>7. DS302 — Duplicated Submission</h2>
+  <p>MyInvois returns <code>DS302</code> when you submit a document whose key attributes (invoice number + supplier TIN) match one already submitted. Each invoice number must be unique per supplier; never resubmit the same document — if it was already <em>Valid</em>, use the existing one.</p>
+
+  <h2>8. Missing or invalid buyer email / phone</h2>
+  <p>Recent (2025–2026) validation rules check the buyer's email and phone fields. Provide a valid email and a phone number in international <code>+60…</code> (E.164) format, or <code>NA</code> where genuinely not applicable, per the latest LHDN rules.</p>
+
+  <h2>9. Consolidated invoice over RM10,000</h2>
+  <p>Since January 2026, a single transaction above <strong>RM10,000</strong> cannot be issued as a consolidated / general-public invoice — it must be a normal e-invoice with the buyer's real details (real TIN, name, address), not the <code>EI00000000010</code> general-public TIN.</p>
+
+  <h2>About the coded errors (CFxxx, DS3xx, Structure)</h2>
+  <p>MyInvois groups failures into validators: a <strong>Structure Validator</strong> (UBL 2.1 shape), a <strong>Core Fields Validator</strong> (the <code>CFxxx</code> codes — a mandatory field is missing or malformed), a <strong>Code Validator</strong> (invalid code-table values), a <strong>Currency Validator</strong>, and a <strong>Duplicate Submission Validator</strong> (<code>DS302</code>). Whatever the code, it points to one specific field failing a rule above — match the field named in the error to the fix here. For the authoritative list, see LHDN's official validation-rules documentation.</p>
+
+  <a class="cta" href="/">Validate your e-invoice JSON now →</a>
+
+  <div class="disclaimer">⚠️ Unofficial guide. Not affiliated with or endorsed by LHDN / IRBM / MyInvois. This explains common errors for convenience; always rely on the official MyInvois system for authoritative validation. Provided “as is”, no warranty.</div>
+
+  <footer>
+    Related: <a href="/">MyInvois JSON Validator (free, in-browser)</a> · <a href="json-sample.html">MyInvois JSON sample &amp; format</a><br>
+    “MyInvois”, “LHDN”, “IRBM” are names of Malaysian government systems used descriptively; this independent tool is not affiliated with them.
+  </footer>
+</main>
+</body>
+</html>
