@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MyInvois JSON Validator — Check Malaysia e-Invoice File Before Submit (Free)</title>
+<meta name="description" content="Free, private MyInvois e-Invoice JSON validator. Paste your Malaysia e-invoice JSON and instantly find the mandatory fields and format errors (RM vs MYR, TIN, dates) that the LHDN MyInvois portal rejects — checked entirely in your browser, nothing uploaded.">
+<link rel="canonical" href="https://example.com/">
+<meta property="og:title" content="MyInvois JSON Validator — Check your Malaysia e-Invoice before submitting">
+<meta property="og:description" content="Find the field that gets your MyInvois e-invoice rejected, before you submit. 100% in-browser, no upload.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✅</text></svg>">
+<style>
+  :root { --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#f8fafc;
+          --err:#dc2626; --errbg:#fef2f2; --warn:#b45309; --warnbg:#fffbeb; --ok:#16a34a; --okbg:#f0fdf4;
+          --brand:#1d4ed8; }
+  * { box-sizing: border-box; }
+  body { font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+         color: var(--ink); background: var(--bg); margin: 0; }
+  main { max-width: 860px; margin: 0 auto; padding: 1.5rem 1.1rem 4rem; }
+  h1 { font-size: 1.7rem; line-height: 1.2; margin: .6rem 0 .3rem; }
+  h2 { font-size: 1.2rem; margin: 2.2rem 0 .6rem; }
+  .lede { color: var(--muted); margin: 0 0 1.2rem; }
+  .disclaimer { background: #fff7ed; border: 1px solid #fed7aa; color: #7c2d12;
+                border-radius: 8px; padding: .6rem .8rem; font-size: .85rem; margin-bottom: 1.2rem; }
+  textarea { width: 100%; min-height: 230px; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+             padding: .8rem; border: 1px solid var(--line); border-radius: 10px; resize: vertical; background: #fff; }
+  textarea.drag { border-color: var(--brand); background: #eff6ff; }
+  .row { display: flex; gap: .6rem; flex-wrap: wrap; margin: .7rem 0 0; }
+  button { font: inherit; font-weight: 600; border: 1px solid var(--line); background: #fff; color: var(--ink);
+           border-radius: 9px; padding: .55rem 1rem; cursor: pointer; }
+  button.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+  button:hover { filter: brightness(.97); }
+  #results { margin-top: 1.2rem; }
+  .summary { font-weight: 700; padding: .7rem .9rem; border-radius: 9px; margin-bottom: .7rem; }
+  .summary.ok { background: var(--okbg); color: var(--ok); border: 1px solid #bbf7d0; }
+  .summary.bad { background: var(--errbg); color: var(--err); border: 1px solid #fecaca; }
+  .issue { display: grid; grid-template-columns: 70px 1fr; gap: .7rem; padding: .6rem .8rem;
+           border-radius: 8px; margin-bottom: .4rem; font-size: .92rem; align-items: start; }
+  .issue.error { background: var(--errbg); } .issue.warning { background: var(--warnbg); }
+  .tag { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em;
+         padding: .15rem 0; }
+  .issue.error .tag { color: var(--err); } .issue.warning .tag { color: var(--warn); }
+  .path { font-family: ui-monospace, monospace; font-size: .82rem; color: var(--muted); display: block; margin-top: .2rem; }
+  details { border: 1px solid var(--line); border-radius: 9px; padding: .3rem .9rem; margin: .5rem 0; background: #fff; }
+  summary { cursor: pointer; font-weight: 600; padding: .4rem 0; }
+  footer { border-top: 1px solid var(--line); margin-top: 2.5rem; padding-top: 1.2rem; color: var(--muted); font-size: .82rem; }
+  a { color: var(--brand); }
+  code { background: #eef2ff; padding: .05rem .3rem; border-radius: 4px; font-size: .85em; }
+</style>
+</head>
+<body>
+<main>
+  <h1>MyInvois JSON Validator</h1>
+  <p class="lede">Paste your Malaysia e-Invoice JSON below to find the mandatory fields and format errors
+    that get rejected by the <strong>MyInvois</strong> portal — <strong>before</strong> you submit.
+    Everything runs in your browser. <strong>Nothing is uploaded.</strong></p>
+
+  <div class="disclaimer">
+    ⚠️ <strong>Unofficial tool.</strong> Not affiliated with, endorsed by, or connected to LHDN / IRBM / MyInvois.
+    This is a structural &amp; format pre-check only — it does <strong>not</strong> replace the official MyInvois
+    portal validation, perform digital signing, or guarantee acceptance. Always confirm with the official system.
+    Provided “as is”, no warranty.
+  </div>
+
+  <textarea id="json" spellcheck="false" placeholder='Paste your e-invoice JSON here, e.g.
+{
+  "_D": "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",
+  "_A": "...CommonAggregateComponents-2",
+  "_B": "...CommonBasicComponents-2",
+  "Invoice": [ { "ID": [{ "_": "INV-001" }], ... } ]
+}'></textarea>
+
+  <div class="row">
+    <button class="primary" id="run">Validate</button>
+    <button id="sample">Load example</button>
+    <button id="clear">Clear</button>
+  </div>
+
+  <div id="results" aria-live="polite"></div>
+
+  <h2>Why your MyInvois e-invoice gets rejected</h2>
+  <p>The MyInvois JSON format is strict UBL 2.1. The most common reasons a file is rejected:</p>
+  <ul>
+    <li>Values not wrapped as arrays — it must be <code>"ID": [{ "_": "INV-001" }]</code>, not <code>"ID": "INV-001"</code>.</li>
+    <li>Currency written as <code>RM</code> instead of the ISO code <code>MYR</code>.</li>
+    <li>Missing supplier or buyer <strong>TIN</strong>, or a TIN that isn’t 14 characters.</li>
+    <li>Wrong date/time format — date must be <code>YYYY-MM-DD</code>, time <code>HH:MM:SSZ</code> in UTC.</li>
+    <li>A single transaction over <strong>RM10,000</strong> sent as a consolidated / general-public invoice (not allowed since Jan 2026).</li>
+    <li><code>currencyID</code> on an amount not matching the document currency.</li>
+  </ul>
+
+  <h2>FAQ</h2>
+  <details><summary>Is my invoice data uploaded anywhere?</summary>
+    <p>No. Validation runs entirely in your browser using JavaScript. Your JSON never leaves your device —
+    there is no server and nothing is stored. You can disconnect from the internet and it still works.</p></details>
+  <details><summary>Does this submit my e-invoice to LHDN?</summary>
+    <p>No. This only checks the structure and format of your JSON. You still submit through the official MyInvois
+    portal or API. This tool helps you catch errors first so the submission doesn’t bounce.</p></details>
+  <details><summary>What does it check?</summary>
+    <p>The wrapped UBL field format, presence of the mandatory Invoice v1.1 fields (ID, dates, type code, currency,
+    supplier/buyer TIN &amp; registration ID, MSIC, address, line items, tax total, legal monetary total), and the
+    common format mistakes the portal rejects. It does <em>not</em> verify digital signatures or do a live TIN lookup.</p></details>
+  <details><summary>Is this the official MyInvois validator?</summary>
+    <p>No. It is an independent, unofficial helper. The authoritative validation is always the official MyInvois system.</p></details>
+
+  <footer>
+    Runs 100% client-side · no data collected · no cookies · no tracking.
+    “MyInvois”, “LHDN” and “IRBM” are names of Malaysian government systems/agencies used here only to describe
+    compatibility; this tool is independent and not affiliated with or endorsed by them.
+    Built against the public LHDN MyInvois SDK Invoice v1.1 field specification.
+  </footer>
+</main>
+
+<!-- SEO: FAQ + software structured data -->
+<script type="application/ld+json">
+{ "@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+  {"@type":"Question","name":"Is my invoice data uploaded anywhere?","acceptedAnswer":{"@type":"Answer","text":"No. Validation runs entirely in your browser. Your JSON never leaves your device; there is no server and nothing is stored."}},
+  {"@type":"Question","name":"Does this submit my e-invoice to LHDN?","acceptedAnswer":{"@type":"Answer","text":"No. It only checks the structure and format of your JSON. You still submit through the official MyInvois portal or API."}},
+  {"@type":"Question","name":"What does the MyInvois JSON validator check?","acceptedAnswer":{"@type":"Answer","text":"The wrapped UBL field format, presence of mandatory Invoice v1.1 fields, and common format mistakes the portal rejects, such as RM vs MYR and invalid TIN length."}}
+]}
+</script>
+
+<script src="validator.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const ta = $("json");
+
+  const SAMPLE = {
+    "_D":"urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",
+    "_A":"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
+    "_B":"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+    "Invoice":[{
+      "ID":[{"_":"INV-2026-001"}],
+      "IssueDate":[{"_":"2026-06-20"}],
+      "IssueTime":[{"_":"10:30:00Z"}],
+      "InvoiceTypeCode":[{"_":"01","listVersionID":"1.1"}],
+      "DocumentCurrencyCode":[{"_":"RM"}],
+      "AccountingSupplierParty":[{"Party":[{
+        "PartyLegalEntity":[{"RegistrationName":[{"_":"Contoh Sdn Bhd"}]}],
+        "PartyIdentification":[{"ID":[{"_":"C1234567890","schemeID":"TIN"}]},{"ID":[{"_":"201901000005","schemeID":"BRN"}]}],
+        "IndustryClassificationCode":[{"_":"62010","name":"Computer programming"}],
+        "PostalAddress":[{"CityName":[{"_":"Kuala Lumpur"}],"Country":[{"IdentificationCode":[{"_":"MYS"}]}]}]
+      }]}],
+      "AccountingCustomerParty":[{"Party":[{
+        "PartyLegalEntity":[{"RegistrationName":[{"_":"Ali bin Abu"}]}],
+        "PartyIdentification":[{"ID":[{"_":"900101015523","schemeID":"NRIC"}]}],
+        "PostalAddress":[{"CityName":[{"_":"Shah Alam"}],"Country":[{"IdentificationCode":[{"_":"MYS"}]}]}]
+      }]}],
+      "InvoiceLine":[{"Item":[{"Description":[{"_":"Consulting services"}]}],"LineExtensionAmount":[{"_":1000,"currencyID":"MYR"}]}],
+      "TaxTotal":[{"TaxAmount":[{"_":0,"currencyID":"MYR"}]}],
+      "LegalMonetaryTotal":[{"TaxExclusiveAmount":[{"_":1000,"currencyID":"MYR"}],"TaxInclusiveAmount":[{"_":1000,"currencyID":"MYR"}],"PayableAmount":[{"_":1000,"currencyID":"MYR"}]}]
+    }]
+  };
+  // sample is deliberately imperfect (RM + missing buyer TIN) so the tool demonstrates real findings.
+
+  function render(res) {
+    const out = $("results");
+    const cls = res.ok ? "ok" : "bad";
+    let html = '<div class="summary ' + cls + '">' + (res.ok ? "✅ " : "❌ ") + esc(res.summary) + "</div>";
+    for (const it of res.issues) {
+      html += '<div class="issue ' + it.severity + '"><span class="tag">' + it.severity +
+              '</span><div>' + esc(it.message) + '<span class="path">' + esc(it.path) + "</span></div></div>";
+    }
+    out.innerHTML = html;
+  }
+  function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c])); }
+
+  $("run").onclick = () => {
+    if (!ta.value.trim()) { $("results").innerHTML = '<div class="summary bad">Paste some JSON first.</div>'; return; }
+    render(MyInvoisValidator.validate(ta.value));
+  };
+  $("sample").onclick = () => { ta.value = JSON.stringify(SAMPLE, null, 2); render(MyInvoisValidator.validate(ta.value)); };
+  $("clear").onclick = () => { ta.value = ""; $("results").innerHTML = ""; };
+
+  // drag & drop a .json file (still client-side; FileReader, no upload)
+  ["dragover","dragleave","drop"].forEach((e) => ta.addEventListener(e, (ev) => {
+    ev.preventDefault();
+    ta.classList.toggle("drag", e === "dragover");
+    if (e === "drop" && ev.dataTransfer.files[0]) {
+      const fr = new FileReader();
+      fr.onload = () => { ta.value = fr.result; render(MyInvoisValidator.validate(ta.value)); };
+      fr.readAsText(ev.dataTransfer.files[0]);
+    }
+  }));
+</script>
+</body>
+</html>
